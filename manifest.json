@@ -1,0 +1,18 @@
+{
+  "name": "Street Pitch Pro",
+  "short_name": "StreetPitch",
+  "description": "Assistente de Pitch e Marketing para Artistas Urbanos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#eab308",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3844/3844724.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
