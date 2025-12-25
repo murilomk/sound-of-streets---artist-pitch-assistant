@@ -23,18 +23,21 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
   const [link, setLink] = useState('');
   const [contentTitle, setContentTitle] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [insights, setInsights] = useState<AudienceData | null>(null);
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!link || !contentTitle) return;
     setLoading(true);
+    setError(null);
     try {
       // Pass lang as third argument to generateAudienceInsights
       const result = await generateAudienceInsights(link, contentTitle, lang);
       setInsights(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || 'Erro ao analisar audiência');
     } finally {
       setLoading(false);
     }
@@ -77,6 +80,12 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
             {loading ? 'Sincronizando Dados IA...' : 'Analisar Performance & Público'}
           </button>
         </form>
+
+        {error && (
+          <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm italic">
+            ⚠️ {error.includes('401') || error.includes('API KEY') ? 'Chave de API inválida no Vercel.' : error}
+          </div>
+        )}
       </div>
 
       {insights && (

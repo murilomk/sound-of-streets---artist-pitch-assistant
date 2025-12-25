@@ -26,17 +26,20 @@ const translations = {
 
 export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [trends, setTrends] = useState<ContentTrend | null>(null);
 
   const t = translations[lang];
 
   const fetchTrends = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await getMusicTrends(lang);
       setTrends(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || 'Erro ao carregar tendências');
     } finally {
       setLoading(false);
     }
@@ -64,6 +67,12 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
           {loading ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm italic">
+          ⚠️ {error.includes('401') || error.includes('API KEY') ? 'Chave de API inválida no Vercel.' : error}
+        </div>
+      )}
 
       {!trends && loading ? (
         <div className="flex flex-col items-center justify-center py-32 opacity-50 space-y-4">

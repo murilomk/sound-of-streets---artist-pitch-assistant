@@ -22,6 +22,7 @@ import { generatePromotionKit, PromoKit, Language } from '../services/geminiServ
 // Added lang prop to fix missing argument error on line 38
 export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [kit, setKit] = useState<PromoKit | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -35,12 +36,14 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
       // Pass lang as second argument to generatePromotionKit
       const result = await generatePromotionKit(formData, lang);
       setKit(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || 'Erro ao gerar kit de promoção');
     } finally {
       setLoading(false);
     }
@@ -125,6 +128,12 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
               )}
             </button>
           </form>
+
+          {error && (
+            <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm italic">
+              ⚠️ {error.includes('401') || error.includes('API KEY') ? 'Chave de API inválida no Vercel.' : error}
+            </div>
+          )}
         </div>
       </div>
 

@@ -23,22 +23,26 @@ export const ReleasePlanner: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
   const [contentTitle, setContentTitle] = useState('');
   const [releaseDate, setReleaseDate] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<ScheduleEvent[]>([]);
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contentTitle || !releaseDate) return;
     setLoading(true);
+    setError(null);
     try {
       // Pass lang as third argument to generateReleaseSchedule
       const result = await generateReleaseSchedule(contentTitle, releaseDate, lang);
       setSchedule(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || 'Erro ao gerar cronograma');
     } finally {
       setLoading(false);
     }
   };
+
 
   const removeEvent = (idx: number) => {
     setSchedule(schedule.filter((_, i) => i !== idx));
@@ -91,8 +95,14 @@ export const ReleasePlanner: React.FC<{ lang: Language }> = ({ lang }) => {
               {loading ? 'Sincronizando Calendário...' : 'Gerar Cronograma Automatizado'}
             </button>
           </form>
+          {error && (
+            <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm italic">
+              ⚠️ {error.includes('401') || error.includes('API KEY') ? 'Chave de API inválida no Vercel.' : error}
+            </div>
+          )}
         </div>
       </div>
+
 
       {schedule.length > 0 && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -88,21 +88,21 @@ const parseJsonResponse = (text: string, fallback: any = {}) => {
 
 export const generatePitch = async (data: PitchData, lang: Language): Promise<string> => {
   const groq = getGroqClient();
-  const prompt = `Você é um assistente especializado em criar pitches profissionais para criadores de conteúdo e artistas.
-
-Crie um e-mail de pitch profissional para um curador ou parceiro em potencial com as seguintes informações:
+  const prompt = `Você é um estrategista de negócios de elite e agente de talentos de alto nível.
+  
+Crie um pitch imbatível e ultra-assertivo para:
 - Criador/Autor: ${data.name}
 - Título do Trabalho: ${data.contentTitle}
 - Categoria/Nicho: ${data.category}
 - Estilo/Tom: ${data.style}
 - Link: ${data.link}
 
-O e-mail deve:
-1. Ter um assunto atraente
-2. Apresentar o criador de forma profissional
-3. Destacar os pontos fortes do conteúdo
-4. Explicar o valor para a audiência alvo
-5. Incluir call-to-action claro
+Regras Cruciais:
+1. Assunto magnético: Use gatilhos mentais para abrir o e-mail em segundos.
+2. Sem enrolação: Vá direto ao ponto e destaque o retorno que o parceiro terá.
+3. Autoridade: A linguagem deve exalar confiança, não parecer um pedido de favor.
+4. Escassez e Valor: Mostre por que esse conteúdo é único no mercado agora.
+5. CTA Inevitável: Uma chamada para ação que não possa ser ignorada.
 
 Responda em ${getLangName(lang)}.`;
 
@@ -118,21 +118,26 @@ Responda em ${getLangName(lang)}.`;
 
 export const analyzeVibe = async (description: string, lang: Language): Promise<{ score: number; feedback: string }> => {
   const groq = getGroqClient();
-  const prompt = `Você é um especialista em análise de fit de conteúdo para plataformas digitais.
-
-Analise o seguinte perfil de canal/criador e determine o potencial de engajamento e qualidade:
+  const prompt = `Você é um Head de Conteúdo brutalmente honesto de uma grande rede de mídia.
+  
+Analise o potencial de mercado desse criador:
 "${description}"
+
+Diretrizes de Resposta:
+1. Seja direto: Se a ideia for ruim, explique o porquê sem rodeios. Se for boa, aponte como escalar.
+2. Foco em Trend-jacking: Como isso se conecta com a cultura atual?
+3. SWOT Rápida: Foque nos pontos de falha que podem matar o canal.
 
 Retorne APENAS um objeto JSON no formato:
 {
-  "score": <número de 0 a 100>,
-  "feedback": "<análise detalhada e construtiva em ${getLangName(lang)}>"
+  "score": <0-100 refletindo real potencial de monetização e viralidade>,
+  "feedback": "<análise ácida, estratégica e de alto impacto em ${getLangName(lang)}>"
 }`;
 
   const completion = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
     model: "llama-3.3-70b-versatile",
-    temperature: 0.5,
+    temperature: 0.3,
     max_tokens: 512,
     response_format: { type: "json_object" }
   });
@@ -142,21 +147,28 @@ Retorne APENAS um objeto JSON no formato:
 
 export const generatePromotionKit = async (data: Partial<PitchData>, lang: Language): Promise<PromoKit> => {
   const groq = getGroqClient();
-  const prompt = `Você é um especialista em marketing digital e estratégias de conteúdo viral.
+  const prompt = `Você é um Growth Hacker e Especialista em Viralização Multi-plataforma.
+  
+Crie um kit de guerra para o lançamento de "${data.contentTitle}" de "${data.name}".
 
-Crie um kit de divulgação COMPLETO para o conteúdo "${data.contentTitle}" do criador "${data.name}".
+Conteúdo Exigido:
+1. Título "Magnético": Focado em CTR absurdo.
+2. Descrição SEO Turbo: Otimizada para algoritmos de busca de 2025.
+3. Captions de Alto Impacto: Gatilhos emocionais e retenção pura.
+4. Roteiro de Retenção: Otimize cada segundo dos 15-30 seg para evitar o 'scroll'.
+5. Estratégia de Guerrilha: 3-4 parágrafos de ações não convencionais para forçar o algoritmo.
 
-Retorne APENAS um objeto JSON com:
+Retorne APENAS um objeto JSON:
 {
-  "platformTitle": "<título otimizado para a plataforma principal>",
-  "platformDescription": "<descrição completa com hashtags e links>",
-  "instagramCaption": "<legenda envolvente para Instagram>",
-  "tiktokCaption": "<legenda viral para TikTok>",
-  "tiktokScript": "<roteiro de 15-30 segs focado em retenção>",
-  "twitterPost": "<post impactante para Twitter/X>",
-  "hashtags": ["<array de 10-15 hashtags relevantes>"],
-  "keywords": ["<array de 8-12 palavras-chave SEO>"],
-  "launchStrategy": "<estratégia de distribuição em 3-4 parágrafos>"
+  "platformTitle": "...",
+  "platformDescription": "...",
+  "instagramCaption": "...",
+  "tiktokCaption": "...",
+  "tiktokScript": "...",
+  "twitterPost": "...",
+  "hashtags": ["15 tags estratégicas"],
+  "keywords": ["10 termos de alto volume SEO"],
+  "launchStrategy": "..."
 }
 
 Responda em ${getLangName(lang)}.`;
@@ -184,23 +196,17 @@ Responda em ${getLangName(lang)}.`;
 
 export const generateAudienceInsights = async (link: string, contentTitle: string, lang: Language): Promise<AudienceData> => {
   const groq = getGroqClient();
-  const prompt = `Você é um analista de dados estratégico especializado em tendências digitais.
+  const prompt = `Você é um Quant-Analyst e Especialista em Psicologia de Audiência.
+  
+Preveja o comportamento e métricas para "${contentTitle}" com precisão estratégica.
 
-Crie insights de audiência simulados (baseados em padrões reais do mercado atual) para o conteúdo "${contentTitle}".
+O JSON deve conter:
+1. Alertas de "Crise ou Oportunidade": Identifique falhas no timing ou brechas de viralização rápida.
+2. Peak Hour: O minuto exato de maior pico baseado em janelas de retenção.
+3. Audience Profile: Quem são e o que eles querem agora.
+4. Growth Hacks: 4 dicas táticas agressivas para dobrar o engajamento orgânico.
 
-Retorne APENAS um objeto JSON:
-{
-  "alerts": [
-    {"title": "<título>", "message": "<mensagem>", "type": "viral|timing|growth"},
-    {"title": "<título>", "message": "<mensagem>", "type": "viral|timing|growth"},
-    {"title": "<título>", "message": "<mensagem>", "type": "viral|timing|growth"}
-  ],
-  "peakHour": "<horário de pico de engajamento, ex: 19:00-21:00>",
-  "bestRegion": "<melhor região geográfica ou demográfica para focar>",
-  "engagementTips": ["<dica de retenção>", "<dica de interação>", "<dica de CTA>", "<dica de comunidade>"]
-}
-
-Responda em ${getLangName(lang)}.`;
+Retorne APENAS um objeto JSON. Responda em ${getLangName(lang)}.`;
 
   const completion = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
@@ -220,23 +226,16 @@ Responda em ${getLangName(lang)}.`;
 
 export const generateReleaseSchedule = async (contentTitle: string, releaseDate: string, lang: Language): Promise<ScheduleEvent[]> => {
   const groq = getGroqClient();
-  const prompt = `Você é um estrategista de lançamentos digitais.
+  const prompt = `Você é um Strategist Master de Lançamentos Milionários.
+  
+Crie uma "Operação de Guerra" de 10 dias para explodir o lançamento de "${contentTitle}" marcado para ${releaseDate}.
 
-Crie um cronograma de 10 dias para o lançamento de "${contentTitle}" previsto para ${releaseDate}.
+Requisitos:
+1. Calendário Agressivo: Cada dia deve ter uma missão de alto impacto.
+2. Timing de Mestre: Horários calculados para máxima entrega do algoritmo.
+3. Ideias Disruptivas: Fuja do óbvio "venha ver meu vídeo". Crie curiosidade e FOMO.
 
-Retorne APENAS um array JSON com 10 eventos:
-[
-  {
-    "day": "D-7",
-    "platform": "Instagram|TikTok|YouTube|Twitter|Other",
-    "action": "<ação estratégica específica>",
-    "recommendedTime": "<horário de postagem>",
-    "contentIdea": "<ideia criativa para o post>"
-  },
-  ...
-]
-
-Responda em ${getLangName(lang)}.`;
+Retorne APENAS um array JSON com 10 missões diárias. Responda em ${getLangName(lang)}.`;
 
   const completion = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
@@ -318,9 +317,9 @@ Responda em ${getLangName(lang)}.`;
 
 export const getMusicTrends = async (lang: Language): Promise<ContentTrend> => {
   const groq = getGroqClient();
-  const prompt = `Você é um analista de tendências digitais globais e criação de conteúdo.
-
-Analise as tendências ATUAIS (dezembro 2024) para criadores de conteúdo na internet.
+  const prompt = `Você é o Diretor Global de Insights Criativos do TikTok e YouTube.
+  
+Analise o zeitgeist atual e as tendências de "vanguarda" para criadores (Dezembro 2024 / Janeiro 2025).
 
 Retorne APENAS um objeto JSON:
 {
