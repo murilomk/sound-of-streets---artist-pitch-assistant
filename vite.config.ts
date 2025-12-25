@@ -12,16 +12,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
-      'capacitor-cli.d.ts': path.resolve(__dirname, 'node_modules/@capgo/capacitor-updater/dist/esm/index.js'), // Hack para evitar erro de resolução
+      'capacitor-cli.d.ts': path.resolve(__dirname, 'mock-capacitor.js'),
     }
   },
   optimizeDeps: {
     exclude: ['@capgo/capacitor-updater']
   },
-  build: {
-    rollupOptions: {
-      external: ['capacitor-cli.d.ts']
-    }
-  }
 });
+
 
