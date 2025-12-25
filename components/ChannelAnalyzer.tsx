@@ -55,6 +55,7 @@ const translations = {
 export const ChannelAnalyzer: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
   const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<{ score: number; feedback: string } | null>(null);
 
   const t = translations[lang];
@@ -63,11 +64,13 @@ export const ChannelAnalyzer: React.FC<{ lang: Language }> = ({ lang }) => {
     e.preventDefault();
     if (!description.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const result = await analyzeVibe(description, lang);
       setAnalysisResult(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || 'Erro na análise de IA');
     } finally {
       setLoading(false);
     }
@@ -88,6 +91,12 @@ export const ChannelAnalyzer: React.FC<{ lang: Language }> = ({ lang }) => {
             {loading ? t.btnLoading : t.btnCheck}
           </button>
         </form>
+
+        {error && (
+          <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm italic">
+            ⚠️ {error.includes('401') || error.includes('API KEY') ? 'Chave de API inválida no Vercel.' : error}
+          </div>
+        )}
 
         {analysisResult && (
           <div className="mt-6 p-6 bg-black/60 rounded-2xl border border-white/5 animate-in fade-in">

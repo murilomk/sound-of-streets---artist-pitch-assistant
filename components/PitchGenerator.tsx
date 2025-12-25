@@ -41,6 +41,7 @@ export const PitchGenerator: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pitch, setPitch] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     contentTitle: '',
@@ -54,11 +55,13 @@ export const PitchGenerator: React.FC<{ lang: Language }> = ({ lang }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
       const result = await generatePitch(formData, lang);
       setPitch(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || 'Erro ao comunicar com a IA');
     } finally {
       setLoading(false);
     }
@@ -135,6 +138,12 @@ export const PitchGenerator: React.FC<{ lang: Language }> = ({ lang }) => {
           </button>
         </div>
       </form>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm italic">
+          ⚠️ {error.includes('401') || error.includes('API KEY') ? 'Chave de API inválida ou não configurada no Vercel.' : error}
+        </div>
+      )}
 
       {pitch && (
         <div className="mt-8">
