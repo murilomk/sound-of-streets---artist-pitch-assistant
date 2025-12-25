@@ -1,19 +1,18 @@
-
-import { GoogleGenAI, Type } from "@google/genai";
+import Groq from "groq-sdk";
 
 export type Language = 'pt' | 'en';
 
 interface PitchData {
   name: string;
-  trackTitle: string;
-  genre: string;
-  mood: string;
+  contentTitle: string;
+  category: string;
+  style: string;
   link: string;
 }
 
 export interface PromoKit {
-  youtubeTitle: string;
-  youtubeDescription: string;
+  platformTitle: string;
+  platformDescription: string;
   instagramCaption: string;
   tiktokCaption: string;
   tiktokScript: string;
@@ -38,7 +37,7 @@ export interface AudienceData {
 
 export interface ScheduleEvent {
   day: string;
-  platform: 'YouTube' | 'TikTok' | 'Instagram' | 'Spotify';
+  platform: 'YouTube' | 'TikTok' | 'Instagram' | 'Spotify' | 'Other';
   action: string;
   recommendedTime: string;
   contentIdea: string;
@@ -58,206 +57,332 @@ export interface DistributionFormat {
   suggestedAction: string;
 }
 
-export interface MusicTrend {
-  trendingGenres: { name: string; growth: string }[];
+export interface ContentTrend {
+  trendingTopics: { name: string; growth: string }[];
   trendingHashtags: string[];
   bestPostingTimes: { platform: string; time: string }[];
   dailyContentSuggestions: { title: string; idea: string }[];
 }
 
+// Initialize Groq client
+const getGroqClient = () => {
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error("VITE_GROQ_API_KEY não configurada. Adicione sua chave no arquivo .env.local");
+  }
+  return new Groq({ apiKey, dangerouslyAllowBrowser: true });
+};
+
 const getLangName = (lang: Language) => lang === 'pt' ? 'PORTUGUÊS (Brasil)' : 'ENGLISH';
 
-const cleanJsonResponse = (text: string) => {
-  return text.replace(/```json/g, '').replace(/```/g, '').trim();
+const parseJsonResponse = (text: string, fallback: any = {}) => {
+  try {
+    // Remove markdown code blocks if present
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch (error) {
+    console.error("Failed to parse JSON response:", error);
+    return fallback;
+  }
 };
 
 export const generatePitch = async (data: PitchData, lang: Language): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Gere um e-mail de pitch profissional para @soundofstreets-v1p. Artista: ${data.name}, Track: ${data.trackTitle}, Gênero: ${data.genre}, Mood: ${data.mood}, Link: ${data.link}. Responda em ${getLangName(lang)}.`;
-  const response = await ai.models.generateContent({ model: "gemini-3-flash-preview", contents: prompt });
-  return response.text || "";
+  const groq = getGroqClient();
+  const prompt = `Você é um assistente especializado em criar pitches profissionais para criadores de conteúdo e artistas.
+
+Crie um e-mail de pitch profissional para um curador ou parceiro em potencial com as seguintes informações:
+- Criador/Autor: ${data.name}
+- Título do Trabalho: ${data.contentTitle}
+- Categoria/Nicho: ${data.category}
+- Estilo/Tom: ${data.style}
+- Link: ${data.link}
+
+O e-mail deve:
+1. Ter um assunto atraente
+2. Apresentar o criador de forma profissional
+3. Destacar os pontos fortes do conteúdo
+4. Explicar o valor para a audiência alvo
+5. Incluir call-to-action claro
+
+Responda em ${getLangName(lang)}.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.7,
+    max_tokens: 1024,
+  });
+
+  return completion.choices[0]?.message?.content || "";
 };
 
 export const analyzeVibe = async (description: string, lang: Language): Promise<{ score: number; feedback: string }> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Analise o fit com @soundofstreets-v1p. Descrição: ${description}. Responda em ${getLangName(lang)}.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: { score: { type: Type.INTEGER }, feedback: { type: Type.STRING } },
-        required: ["score", "feedback"],
-      },
-    },
+  const groq = getGroqClient();
+  const prompt = `Você é um especialista em análise de fit de conteúdo para plataformas digitais.
+
+Analise o seguinte perfil de canal/criador e determine o potencial de engajamento e qualidade:
+"${description}"
+
+Retorne APENAS um objeto JSON no formato:
+{
+  "score": <número de 0 a 100>,
+  "feedback": "<análise detalhada e construtiva em ${getLangName(lang)}>"
+}`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.5,
+    max_tokens: 512,
+    response_format: { type: "json_object" }
   });
-  return JSON.parse(cleanJsonResponse(response.text || '{"score": 50, "feedback": ""}'));
+
+  return parseJsonResponse(completion.choices[0]?.message?.content || '{}', { score: 50, feedback: "Não foi possível analisar." });
 };
 
 export const generatePromotionKit = async (data: Partial<PitchData>, lang: Language): Promise<PromoKit> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Crie um kit de divulgação completo para "${data.trackTitle}" de "${data.name}". Responda em ${getLangName(lang)}.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          youtubeTitle: { type: Type.STRING },
-          youtubeDescription: { type: Type.STRING },
-          instagramCaption: { type: Type.STRING },
-          tiktokCaption: { type: Type.STRING },
-          tiktokScript: { type: Type.STRING },
-          twitterPost: { type: Type.STRING },
-          hashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
-          keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-          launchStrategy: { type: Type.STRING },
-        },
-        required: ["youtubeTitle", "youtubeDescription", "instagramCaption", "tiktokCaption", "tiktokScript", "twitterPost", "hashtags", "keywords", "launchStrategy"],
-      },
-    },
+  const groq = getGroqClient();
+  const prompt = `Você é um especialista em marketing digital e estratégias de conteúdo viral.
+
+Crie um kit de divulgação COMPLETO para o conteúdo "${data.contentTitle}" do criador "${data.name}".
+
+Retorne APENAS um objeto JSON com:
+{
+  "platformTitle": "<título otimizado para a plataforma principal>",
+  "platformDescription": "<descrição completa com hashtags e links>",
+  "instagramCaption": "<legenda envolvente para Instagram>",
+  "tiktokCaption": "<legenda viral para TikTok>",
+  "tiktokScript": "<roteiro de 15-30 segs focado em retenção>",
+  "twitterPost": "<post impactante para Twitter/X>",
+  "hashtags": ["<array de 10-15 hashtags relevantes>"],
+  "keywords": ["<array de 8-12 palavras-chave SEO>"],
+  "launchStrategy": "<estratégia de distribuição em 3-4 parágrafos>"
+}
+
+Responda em ${getLangName(lang)}.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.8,
+    max_tokens: 2048,
+    response_format: { type: "json_object" }
   });
-  return JSON.parse(cleanJsonResponse(response.text || '{}'));
+
+  return parseJsonResponse(completion.choices[0]?.message?.content || '{}', {
+    platformTitle: "",
+    platformDescription: "",
+    instagramCaption: "",
+    tiktokCaption: "",
+    tiktokScript: "",
+    twitterPost: "",
+    hashtags: [],
+    keywords: [],
+    launchStrategy: ""
+  });
 };
 
-export const generateAudienceInsights = async (link: string, trackTitle: string, lang: Language): Promise<AudienceData> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Simule análise de audiência para "${trackTitle}". Responda em ${getLangName(lang)}.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          alerts: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, message: { type: Type.STRING }, type: { type: Type.STRING } }, required: ["title", "message", "type"] } },
-          peakHour: { type: Type.STRING },
-          bestRegion: { type: Type.STRING },
-          engagementTips: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ["alerts", "peakHour", "bestRegion", "engagementTips"],
-      }
-    }
+export const generateAudienceInsights = async (link: string, contentTitle: string, lang: Language): Promise<AudienceData> => {
+  const groq = getGroqClient();
+  const prompt = `Você é um analista de dados estratégico especializado em tendências digitais.
+
+Crie insights de audiência simulados (baseados em padrões reais do mercado atual) para o conteúdo "${contentTitle}".
+
+Retorne APENAS um objeto JSON:
+{
+  "alerts": [
+    {"title": "<título>", "message": "<mensagem>", "type": "viral|timing|growth"},
+    {"title": "<título>", "message": "<mensagem>", "type": "viral|timing|growth"},
+    {"title": "<título>", "message": "<mensagem>", "type": "viral|timing|growth"}
+  ],
+  "peakHour": "<horário de pico de engajamento, ex: 19:00-21:00>",
+  "bestRegion": "<melhor região geográfica ou demográfica para focar>",
+  "engagementTips": ["<dica de retenção>", "<dica de interação>", "<dica de CTA>", "<dica de comunidade>"]
+}
+
+Responda em ${getLangName(lang)}.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.7,
+    max_tokens: 1024,
+    response_format: { type: "json_object" }
   });
-  return JSON.parse(cleanJsonResponse(response.text || '{}'));
+
+  return parseJsonResponse(completion.choices[0]?.message?.content || '{}', {
+    alerts: [],
+    peakHour: "",
+    bestRegion: "",
+    engagementTips: []
+  });
 };
 
-export const generateReleaseSchedule = async (trackTitle: string, releaseDate: string, lang: Language): Promise<ScheduleEvent[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Crie cronograma de 10 dias para "${trackTitle}" em ${releaseDate}. Responda em ${getLangName(lang)}.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            day: { type: Type.STRING },
-            platform: { type: Type.STRING },
-            action: { type: Type.STRING },
-            recommendedTime: { type: Type.STRING },
-            contentIdea: { type: Type.STRING }
-          },
-          required: ["day", "platform", "action", "recommendedTime", "contentIdea"]
-        }
-      }
-    }
+export const generateReleaseSchedule = async (contentTitle: string, releaseDate: string, lang: Language): Promise<ScheduleEvent[]> => {
+  const groq = getGroqClient();
+  const prompt = `Você é um estrategista de lançamentos digitais.
+
+Crie um cronograma de 10 dias para o lançamento de "${contentTitle}" previsto para ${releaseDate}.
+
+Retorne APENAS um array JSON com 10 eventos:
+[
+  {
+    "day": "D-7",
+    "platform": "Instagram|TikTok|YouTube|Twitter|Other",
+    "action": "<ação estratégica específica>",
+    "recommendedTime": "<horário de postagem>",
+    "contentIdea": "<ideia criativa para o post>"
+  },
+  ...
+]
+
+Responda em ${getLangName(lang)}.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.7,
+    max_tokens: 2048,
+    response_format: { type: "json_object" }
   });
-  return JSON.parse(cleanJsonResponse(response.text || '[]'));
+
+  const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}', { schedule: [] });
+  return result.schedule || result.events || result || [];
 };
 
-export const getVideoEditSuggestions = async (trackInfo: string, lang: Language): Promise<VideoSuggestion[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Sugira momentos para shorts/tiktok para "${trackInfo}". Responda em ${getLangName(lang)}.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            timestamp: { type: Type.STRING },
-            reason: { type: Type.STRING },
-            hook: { type: Type.STRING }
-          },
-          required: ["timestamp", "reason", "hook"]
-        }
-      }
-    }
+export const getVideoEditSuggestions = async (contentInfo: string, lang: Language): Promise<VideoSuggestion[]> => {
+  const groq = getGroqClient();
+  const prompt = `Você é um especialista em edição de vídeos de alta retenção para TikTok, Reels e Shorts.
+
+Para o conteúdo: "${contentInfo}"
+
+Sugira 5 momentos ou estilos de corte ideais para maximizar o alcance orgânico.
+
+Retorne APENAS um array JSON:
+[
+  {
+    "timestamp": "Sugestão de tempo ou momento",
+    "reason": "<por que esse formato/momento engaja>",
+    "hook": "<gancho visual ou textual para os primeiros 3 segundos>"
+  },
+  ...
+]
+
+Responda em ${getLangName(lang)}.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.8,
+    max_tokens: 1024,
+    response_format: { type: "json_object" }
   });
-  return JSON.parse(cleanJsonResponse(response.text || '[]'));
+
+  const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}', { suggestions: [] });
+  return result.suggestions || result.clips || result || [];
 };
 
-export const generateThumbnail = async (prompt: string, lang: Language): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
-    contents: { parts: [{ text: `YouTube thumbnail urban rap: ${prompt}. Cinematic lighting.` }] },
-    config: { imageConfig: { aspectRatio: "16:9" } }
+export const prepareDistributionConfig = async (contentTitle: string, lang: Language): Promise<DistributionFormat[]> => {
+  const groq = getGroqClient();
+  const prompt = `Você é um especialista em otimização multiplataforma.
+
+Crie configurações de distribuição otimizadas para o conteúdo "${contentTitle}" em diferentes redes sociais.
+
+Retorne APENAS um array JSON:
+[
+  {
+    "platform": "<nome da plataforma>",
+    "aspectRatio": "<proporção de tela recomendada>",
+    "maxDuration": "<duração ideal para o algoritmo>",
+    "optimizationNote": "<nota sobre o algoritmo ou SEO>",
+    "suggestedAction": "<ação imediata>"
+  },
+  ...
+]
+
+Inclua: YouTube, TikTok, Instagram Reels, Instagram Feed, Twitter.
+
+Responda em ${getLangName(lang)}.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.5,
+    max_tokens: 1536,
+    response_format: { type: "json_object" }
   });
-  for (const part of response.candidates[0].content.parts) {
-    if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
-  }
-  throw new Error("Falha.");
+
+  const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}', { formats: [] });
+  return result.formats || result.platforms || result || [];
 };
 
-export const prepareDistributionConfig = async (trackTitle: string, lang: Language): Promise<DistributionFormat[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Configs multicanal para "${trackTitle}". Responda em ${getLangName(lang)}.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            platform: { type: Type.STRING },
-            aspectRatio: { type: Type.STRING },
-            maxDuration: { type: Type.STRING },
-            optimizationNote: { type: Type.STRING },
-            suggestedAction: { type: Type.STRING }
-          },
-          required: ["platform", "aspectRatio", "maxDuration", "optimizationNote", "suggestedAction"]
-        }
-      }
-    }
+export const getMusicTrends = async (lang: Language): Promise<ContentTrend> => {
+  const groq = getGroqClient();
+  const prompt = `Você é um analista de tendências digitais globais e criação de conteúdo.
+
+Analise as tendências ATUAIS (dezembro 2024) para criadores de conteúdo na internet.
+
+Retorne APENAS um objeto JSON:
+{
+  "trendingTopics": [
+    {"name": "<tópico/nicho em alta>", "growth": "<nível de crescimento ou descrição>"},
+    {"name": "<tópico/nicho em alta>", "growth": "<nível de crescimento ou descrição>"},
+    {"name": "<tópico/nicho em alta>", "growth": "<nível de crescimento ou descrição>"}
+  ],
+  "trendingHashtags": ["<hashtag1>", "<hashtag2>", "...<12 hashtags>"],
+  "bestPostingTimes": [
+    {"platform": "TikTok", "time": "<horário recomendada>"},
+    {"platform": "Instagram", "time": "<horário recomendada>"},
+    {"platform": "YouTube", "time": "<horário recomendada>"}
+  ],
+  "dailyContentSuggestions": [
+    {"title": "<ideia de conteúdo>", "idea": "<descrição curta da execução>"},
+    {"title": "<ideia de conteúdo>", "idea": "<descrição curta da execução>"},
+    {"title": "<ideia de conteúdo>", "idea": "<descrição curta da execução>"},
+    {"title": "<ideia de conteúdo>", "idea": "<descrição curta da execução>"},
+    {"title": "<ideia de conteúdo>", "idea": "<descrição curta da execução>"}
+  ]
+}
+
+Responda em ${getLangName(lang)}.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.7,
+    max_tokens: 2048,
+    response_format: { type: "json_object" }
   });
-  return JSON.parse(cleanJsonResponse(response.text || '[]'));
+
+  return parseJsonResponse(completion.choices[0]?.message?.content || '{}', {
+    trendingTopics: [],
+    trendingHashtags: [],
+    bestPostingTimes: [],
+    dailyContentSuggestions: []
+  });
 };
 
-export const getMusicTrends = async (lang: Language): Promise<MusicTrend> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Analise as tendências atuais da música urbana (Trap, Rap, Drill). Responda em ${getLangName(lang)}. Inclua ritmos, hashtags, horários e ideias de conteúdo.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          trendingGenres: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, growth: { type: Type.STRING } }, required: ["name", "growth"] } },
-          trendingHashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
-          bestPostingTimes: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { platform: { type: Type.STRING }, time: { type: Type.STRING } }, required: ["platform", "time"] } },
-          dailyContentSuggestions: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, idea: { type: Type.STRING } }, required: ["title", "idea"] } }
-        },
-        required: ["trendingGenres", "trendingHashtags", "bestPostingTimes", "dailyContentSuggestions"]
-      }
-    }
+export const generateThumbnail = async (promptInfo: string, lang: Language): Promise<string> => {
+  const groq = getGroqClient();
+  const prompt = `Você é um gerador de comandos para IAs de imagem (como Midjourney ou DALL-E).
+  
+Crie um prompt detalhado e visualmente impactante para uma capa/thumbnail com base nesta descrição:
+"${promptInfo}"
+
+O estilo deve ser moderno, com cores vibrantes e composição estratégica para YouTube.
+Retorne APENAS o link de uma imagem placeholder premium que represente o estilo (via Unsplash Source ou similar) ou uma descrição textual do prompt se preferir, mas como o app espera uma URL, usaremos uma URL baseada em keywords:
+https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=1280&h=720
+
+Responda APENAS com a URL.`;
+
+  const completion = await groq.chat.completions.create({
+    messages: [{ role: "user", content: prompt }],
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.7,
+    max_tokens: 256,
   });
-  return JSON.parse(cleanJsonResponse(response.text || '{}'));
+
+  const content = completion.choices[0]?.message?.content || "";
+  const urlMatch = content.match(/https?:\/\/[^\s]+/);
+  return urlMatch ? urlMatch[0] : "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=1280&h=720";
 };

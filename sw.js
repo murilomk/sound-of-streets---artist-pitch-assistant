@@ -1,4 +1,4 @@
-const CACHE_NAME = 'street-pitch-v1';
+const CACHE_NAME = 'content-pitch-v1';
 const ASSETS = [
   '/',
   '/index.html',

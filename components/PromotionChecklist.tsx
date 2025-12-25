@@ -1,14 +1,14 @@
 
 import React, { useState } from 'react';
-import { CheckSquare, Square, Music4, Image as ImageIcon, Link as LinkIcon, Share2 } from 'lucide-react';
+import { CheckSquare, Square, FileText, Image as ImageIcon, Link as LinkIcon, Share2, Search } from 'lucide-react';
 
 export const PromotionChecklist: React.FC = () => {
   const [items, setItems] = useState([
-    { id: 1, text: "Mixagem e Masterização profissional (WAV/320kbps MP3)", checked: false, icon: <Music4 size={18} /> },
-    { id: 2, text: "Capa do Single/Álbum em alta resolução (3000x3000px)", checked: false, icon: <ImageIcon size={18} /> },
-    { id: 3, text: "Letra da música organizada para a descrição", checked: false, icon: <CheckSquare size={18} /> },
-    { id: 4, text: "Links sociais atualizados (Instagram, Spotify, etc)", checked: false, icon: <LinkIcon size={18} /> },
-    { id: 5, text: "Plano de divulgação nas redes sociais após o post", checked: false, icon: <Share2 size={18} /> },
+    { id: 1, text: "Conteúdo finalizado e revisado em alta qualidade", checked: false, icon: <FileText size={18} /> },
+    { id: 2, text: "Thumbnail ou Capa em alta resolução (ex: 1920x1080 / 3000x3000px)", checked: false, icon: <ImageIcon size={18} /> },
+    { id: 3, text: "Descrição e metadados otimizados para SEO", checked: false, icon: <Search size={18} /> },
+    { id: 4, text: "Links sociais e CTAs atualizados (Bio, Descrição, etc)", checked: false, icon: <LinkIcon size={18} /> },
+    { id: 5, text: "Plano de engajamento pós-publicação definido", checked: false, icon: <Share2 size={18} /> },
   ]);
 
   const toggleItem = (id: number) => {
@@ -31,22 +31,21 @@ export const PromotionChecklist: React.FC = () => {
       </div>
 
       <div className="w-full bg-white/5 h-2 rounded-full mb-8 overflow-hidden">
-        <div 
-          className="bg-yellow-500 h-full transition-all duration-500" 
+        <div
+          className="bg-yellow-500 h-full transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       <div className="space-y-3">
         {items.map(item => (
-          <button 
+          <button
             key={item.id}
             onClick={() => toggleItem(item.id)}
-            className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${
-              item.checked 
-                ? 'bg-green-500/10 border-green-500/30 text-white' 
+            className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${item.checked
+                ? 'bg-green-500/10 border-green-500/30 text-white'
                 : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/20'
-            }`}
+              }`}
           >
             <span className={item.checked ? 'text-green-500' : 'text-gray-600'}>
               {item.checked ? <CheckSquare size={20} /> : <Square size={20} />}
@@ -64,15 +63,15 @@ export const PromotionChecklist: React.FC = () => {
         <ul className="space-y-3">
           <li className="flex gap-3 text-xs text-gray-400">
             <span className="text-yellow-500">•</span>
-            Não envie apenas o arquivo. Envie um link do Google Drive ou SoundCloud Privado para facilitar a audição do curador.
+            Facilite o acesso ao seu trabalho. Use links diretos e públicos que não exijam login para visualização rápida.
           </li>
           <li className="flex gap-3 text-xs text-gray-400">
             <span className="text-yellow-500">•</span>
-            Personalize seu pitch. Canais grandes recebem centenas de e-mails genéricos por dia.
+            Personalize cada abordagem. Curadores e marcas valorizam quando percebem que você pesquisou o perfil deles antes.
           </li>
           <li className="flex gap-3 text-xs text-gray-400">
             <span className="text-yellow-500">•</span>
-            Ofereça-se para compartilhar o link do YouTube em seus stories assim que for postado. Isso cria uma parceria ganha-ganha.
+            Crie um senso de comunidade. Interaja com quem comenta e incentive o compartilhamento genuíno do seu público.
           </li>
         </ul>
       </div>

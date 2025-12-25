@@ -1,24 +1,24 @@
 
 import React, { useState, useEffect } from 'react';
 import { Flame, TrendingUp, Hash, Clock, Sparkles, Loader2, RefreshCw, Zap, Youtube, Instagram, Smartphone, ChevronRight } from 'lucide-react';
-import { getMusicTrends, MusicTrend, Language } from '../services/geminiService';
+import { getMusicTrends, ContentTrend, Language } from '../services/geminiService';
 
 const translations = {
   pt: {
-    title: "Trends & Radar Urbano",
-    loading: "Escaneando o algoritmo...",
-    ritmos: "Ritmos em Alta",
-    tempos: "Tempos de Postagem",
-    hashtags: "Hashtags em Crescimento",
-    sugestoes: "Sugestões Diárias de Conteúdo",
+    title: "Trends & Insights Digitais",
+    loading: "Escaneando tendências globais...",
+    ritmos: "Tópicos em Alta",
+    tempos: "Melhores Horários",
+    hashtags: "Hashtags Virais",
+    sugestoes: "Sugestões de Conteúdo Diário",
     dica: "Dica Estratégica IA"
   },
   en: {
-    title: "Trends & Urban Radar",
-    loading: "Scanning algorithm...",
-    ritmos: "Trending Rhythms",
+    title: "Digital Trends & Insights",
+    loading: "Scanning global trends...",
+    ritmos: "Trending Topics",
     tempos: "Best Posting Times",
-    hashtags: "Growing Hashtags",
+    hashtags: "Viral Hashtags",
     sugestoes: "Daily Content Suggestions",
     dica: "AI Strategic Tip"
   }
@@ -26,7 +26,7 @@ const translations = {
 
 export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
-  const [trends, setTrends] = useState<MusicTrend | null>(null);
+  const [trends, setTrends] = useState<ContentTrend | null>(null);
 
   const t = translations[lang];
 
@@ -44,6 +44,13 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
 
   useEffect(() => {
     fetchTrends();
+
+    // Auto-refresh every 10 minutes
+    const interval = setInterval(() => {
+      fetchTrends();
+    }, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, [lang]);
 
   return (
@@ -71,7 +78,7 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
                 <TrendingUp size={16} className="text-yellow-500" /> {t.ritmos}
               </h4>
               <div className="space-y-5">
-                {trends.trendingGenres.map((g, idx) => (
+                {trends.trendingTopics.map((g, idx) => (
                   <div key={idx} className="group">
                     <div className="flex justify-between items-end mb-2">
                       <span className="text-sm font-bold text-gray-300">{g.name}</span>
@@ -127,7 +134,7 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
 
             <div className="bg-gradient-to-r from-blue-500/20 to-transparent border-l-4 border-blue-500 p-6 rounded-r-3xl">
               <h6 className="text-white font-bold text-xs uppercase tracking-widest mb-2">{t.dica}</h6>
-              <p className="text-xs text-gray-400 leading-relaxed italic">Algorithm insights based on current urban music patterns.</p>
+              <p className="text-xs text-gray-400 leading-relaxed italic">Insights baseados em padrões de algoritmos e comportamento de audiência atual.</p>
             </div>
           </div>
         </div>

@@ -5,35 +5,35 @@ import { generatePitch, Language } from '../services/geminiService';
 const translations = {
   pt: {
     title: "Gerador de Pitch Profissional",
-    desc: "Crie uma mensagem impactante para o curador do Sound of Streets.",
-    nameLabel: "Seu Nome Artístico",
-    trackLabel: "Título da Música",
-    genreLabel: "Gênero",
-    vibeLabel: "Vibe / Mood",
-    linkLabel: "Link (SoundCloud/Drive/Youtube)",
+    desc: "Crie uma mensagem impactante para curadores, marcas ou parceiros.",
+    nameLabel: "Seu Nome / Marca / Canal",
+    contentLabel: "Título do Trabalho / Conteúdo",
+    categoryLabel: "Categoria / Nicho",
+    styleLabel: "Estilo / Tom (ex: Sério, Divertido)",
+    linkLabel: "Link do Conteúdo",
     btnGenerate: "Gerar Pitch Personalizado",
     btnLoading: "Gerando Proposta...",
     copy: "Copiar",
     copied: "Copiado!",
     share: "Compartilhar",
     pitchResult: "Seu Pitch Gerado:",
-    tip: "<strong>Dica Pro:</strong> Tente enviar sua música via DM no Instagram do canal ou procure o e-mail na aba 'Sobre' do YouTube."
+    tip: "<strong>Dica Pro:</strong> Personalize o pitch com dados reais de engajamento para aumentar suas chances de sucesso."
   },
   en: {
     title: "Professional Pitch Generator",
-    desc: "Create an impactful message for the Sound of Streets curator.",
-    nameLabel: "Stage Name",
-    trackLabel: "Track Title",
-    genreLabel: "Genre",
-    vibeLabel: "Vibe / Mood",
-    linkLabel: "Link (SoundCloud/Drive/Youtube)",
+    desc: "Create an impactful message for curators, brands, or partners.",
+    nameLabel: "Your Name / Brand / Channel",
+    contentLabel: "Content / Project Title",
+    categoryLabel: "Category / Niche",
+    styleLabel: "Style / Tone (e.g., Serious, Fun)",
+    linkLabel: "Content Link",
     btnGenerate: "Generate Custom Pitch",
     btnLoading: "Generating Proposal...",
     copy: "Copy",
     copied: "Copied!",
     share: "Share",
     pitchResult: "Your Generated Pitch:",
-    tip: "<strong>Pro Tip:</strong> Try sending your music via Instagram DM or look for the email in the 'About' tab on YouTube."
+    tip: "<strong>Pro Tip:</strong> Personalize the pitch with real engagement data to increase your chances of success."
   }
 };
 
@@ -41,7 +41,13 @@ export const PitchGenerator: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pitch, setPitch] = useState<string>('');
-  const [formData, setFormData] = useState({ name: '', trackTitle: '', genre: 'Trap', mood: 'Dark/Chill', link: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    contentTitle: '',
+    category: 'Música',
+    style: '',
+    link: ''
+  });
 
   const t = translations[lang];
 
@@ -68,7 +74,7 @@ export const PitchGenerator: React.FC<{ lang: Language }> = ({ lang }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Pitch: ${formData.trackTitle}`,
+          title: `Pitch: ${formData.contentTitle}`,
           text: pitch,
         });
       } catch (err) {
@@ -92,25 +98,35 @@ export const PitchGenerator: React.FC<{ lang: Language }> = ({ lang }) => {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-500 uppercase">{t.nameLabel}</label>
-          <input type="text" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+          <input type="text" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-500 uppercase">{t.trackLabel}</label>
-          <input type="text" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.trackTitle} onChange={(e) => setFormData({...formData, trackTitle: e.target.value})} />
+          <label className="text-xs font-bold text-gray-500 uppercase">{t.contentLabel}</label>
+          <input type="text" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.contentTitle} onChange={(e) => setFormData({ ...formData, contentTitle: e.target.value })} />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-500 uppercase">{t.genreLabel}</label>
-          <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.genre} onChange={(e) => setFormData({...formData, genre: e.target.value})}>
-            <option value="Trap">Trap</option><option value="Boom Bap">Boom Bap</option><option value="Drill">Drill</option>
+          <label className="text-xs font-bold text-gray-500 uppercase">{t.categoryLabel}</label>
+          <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500 appearance-none" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+            <option value="Música" className="bg-[#1a1a1a]">Música</option>
+            <option value="Gaming" className="bg-[#1a1a1a]">Gaming</option>
+            <option value="Culinária" className="bg-[#1a1a1a]">Culinária</option>
+            <option value="Tecnologia" className="bg-[#1a1a1a]">Tecnologia</option>
+            <option value="Educação" className="bg-[#1a1a1a]">Educação</option>
+            <option value="Fitness" className="bg-[#1a1a1a]">Fitness</option>
+            <option value="Vlogs" className="bg-[#1a1a1a]">Vlogs</option>
+            <option value="Comédia" className="bg-[#1a1a1a]">Comédia</option>
+            <option value="Beleza & Moda" className="bg-[#1a1a1a]">Beleza & Moda</option>
+            <option value="Negócios" className="bg-[#1a1a1a]">Negócios</option>
+            <option value="Outro" className="bg-[#1a1a1a]">Outro</option>
           </select>
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-500 uppercase">{t.vibeLabel}</label>
-          <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.mood} onChange={(e) => setFormData({...formData, mood: e.target.value})} />
+          <label className="text-xs font-bold text-gray-500 uppercase">{t.styleLabel}</label>
+          <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.style} onChange={(e) => setFormData({ ...formData, style: e.target.value })} />
         </div>
         <div className="md:col-span-2 space-y-2">
           <label className="text-xs font-bold text-gray-500 uppercase">{t.linkLabel}</label>
-          <input type="url" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.link} onChange={(e) => setFormData({...formData, link: e.target.value})} />
+          <input type="url" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500" value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} />
         </div>
         <div className="md:col-span-2 pt-4">
           <button type="submit" disabled={loading} className="w-full bg-yellow-500 hover:bg-yellow-600 text-black py-4 rounded-xl font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">

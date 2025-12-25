@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  Globe, 
-  Clock, 
-  Zap, 
-  Loader2, 
-  Bell, 
-  ArrowUpRight, 
-  Heart, 
-  MessageCircle, 
+import {
+  BarChart3,
+  TrendingUp,
+  Users,
+  Globe,
+  Clock,
+  Zap,
+  Loader2,
+  Bell,
+  ArrowUpRight,
+  Heart,
+  MessageCircle,
   Share2,
   Sparkles,
   Play
@@ -22,16 +22,16 @@ import { generateAudienceInsights, AudienceData, Language } from '../services/ge
 export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
   const [link, setLink] = useState('');
-  const [trackTitle, setTrackTitle] = useState('');
+  const [contentTitle, setContentTitle] = useState('');
   const [insights, setInsights] = useState<AudienceData | null>(null);
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!link || !trackTitle) return;
+    if (!link || !contentTitle) return;
     setLoading(true);
     try {
       // Pass lang as third argument to generateAudienceInsights
-      const result = await generateAudienceInsights(link, trackTitle, lang);
+      const result = await generateAudienceInsights(link, contentTitle, lang);
       setInsights(result);
     } catch (err) {
       console.error(err);
@@ -52,23 +52,23 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
         </div>
 
         <form onSubmit={handleAnalyze} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input 
-            type="text" 
-            placeholder="Título da Música" 
+          <input
+            type="text"
+            placeholder="Título do Conteúdo"
             className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500 outline-none transition-all"
-            value={trackTitle}
-            onChange={e => setTrackTitle(e.target.value)}
+            value={contentTitle}
+            onChange={e => setContentTitle(e.target.value)}
             required
           />
-          <input 
-            type="url" 
-            placeholder="Link da Música/Vídeo" 
+          <input
+            type="url"
+            placeholder="Link do Conteúdo (YouTube/Post/Etc)"
             className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500 outline-none transition-all"
             value={link}
             onChange={e => setLink(e.target.value)}
             required
           />
-          <button 
+          <button
             type="submit"
             disabled={loading}
             className="md:col-span-2 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-black py-4 rounded-xl font-bold uppercase flex items-center justify-center gap-2 transition-all"
@@ -81,7 +81,7 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
 
       {insights && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
+
           {/* Main Dashboard Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard icon={<TrendingUp className="text-green-500" />} label="Crescimento Diário" value="+12.4%" color="green" />
@@ -90,7 +90,7 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* Charts Simulation Section */}
             <div className="glass rounded-3xl p-6 border border-white/5">
               <h4 className="text-white font-bold mb-6 flex items-center gap-2 uppercase text-xs tracking-widest">
@@ -98,11 +98,11 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
               </h4>
               <div className="space-y-4">
                 <RegionProgress region={insights.bestRegion} percentage={45} />
-                <RegionProgress region="Rio de Janeiro" percentage={28} />
-                <RegionProgress region="Belo Horizonte" percentage={15} />
-                <RegionProgress region="Curitiba" percentage={12} />
+                <RegionProgress region="Crescimento Orgânico" percentage={28} />
+                <RegionProgress region="Busca Direta" percentage={15} />
+                <RegionProgress region="Explorar / Viral" percentage={12} />
               </div>
-              
+
               <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Clock className="text-gray-500" size={16} />
@@ -169,8 +169,8 @@ const RegionProgress: React.FC<{ region: string, percentage: number }> = ({ regi
       <span className="text-yellow-500">{percentage}%</span>
     </div>
     <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-      <div 
-        className="bg-yellow-500 h-full rounded-full transition-all duration-1000 ease-out" 
+      <div
+        className="bg-yellow-500 h-full rounded-full transition-all duration-1000 ease-out"
         style={{ width: `${percentage}%` }}
       />
     </div>

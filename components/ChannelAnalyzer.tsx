@@ -5,49 +5,49 @@ import { analyzeVibe, Language } from '../services/geminiService';
 
 const translations = {
   pt: {
-    vibeTitle: "Simulador de 'Vibe Check' IA",
-    vibeDesc: "Descreva sua track (instrumental, letra, mood) e a IA dirá qual a chance de ser aceita no <strong>Sound of Streets</strong>.",
-    textareaPlaceholder: "Ex: É um trap melódico com violão, vibe dark mas relaxante...",
-    btnCheck: "Verificar Fit com o Canal",
+    vibeTitle: "Simulador de Qualidade IA",
+    vibeDesc: "Descreva seu conteúdo (tema, estilo, público-alvo) e a IA analisará o potencial de engajamento e qualidade.",
+    textareaPlaceholder: "Ex: É um canal de receitas rápidas para estudantes, focado em simplicidade e economia...",
+    btnCheck: "Analisar Perfil de Conteúdo",
     btnLoading: "Analisando...",
-    scoreLabel: "Street Fit Score",
+    scoreLabel: "Content Quality Score",
     stratTitle: "Análise Estratégica",
-    stratDesc: "O que você precisa saber antes de mandar sua track.",
-    actionTitle: "💡 Plano de Ação para @soundofstreets-v1p:",
+    stratDesc: "O que você precisa saber para otimizar seu conteúdo.",
+    actionTitle: "💡 Plano de Ação Estratégico:",
     actionItems: [
-      "Assista aos últimos 5 vídeos. Sua música soaria bem entre eles?",
-      "Verifique os links nas descrições para formulários.",
-      "Tenha uma artwork em alta resolução.",
-      "Se não responderem em 10 dias, envie um follow-up."
+      "Analise os vídeos de maior sucesso do seu nicho nos últimos 30 dias.",
+      "Otimize seu título e thumbnail para maximizar o CTR.",
+      "Mantenha uma consistência visual em todo o perfil.",
+      "Interaja com a audiência nos comentários na primeira hora do post."
     ],
     stratCards: [
-      { title: "Estética", desc: "Uso de visuais noturnos e luzes neon." },
-      { title: "Público", desc: "Focado em jovens que buscam novos talentos." },
-      { title: "Qualidade", desc: "Mix e master devem estar profissionais." },
-      { title: "Exclusividade", desc: "Mencionar premiere ajuda na aceitação." }
+      { title: "Estética", desc: "Identidade visual coerente com o nicho escolhido." },
+      { title: "Público", desc: "Definição clara da persona que consome seu conteúdo." },
+      { title: "Qualidade", desc: "Áudio e vídeo devem ter clareza e boa edição." },
+      { title: "Retenção", desc: "Ganchos fortes nos primeiros 3-5 segundos." }
     ]
   },
   en: {
-    vibeTitle: "AI 'Vibe Check' Simulator",
-    vibeDesc: "Describe your track (instrumental, lyrics, mood) and the AI will estimate your chance of acceptance on <strong>Sound of Streets</strong>.",
-    textareaPlaceholder: "Ex: It's a melodic trap with guitar, dark yet relaxing vibe...",
-    btnCheck: "Check Channel Fit",
+    vibeTitle: "AI Quality Simulator",
+    vibeDesc: "Describe your content (topic, style, target audience) and the AI will analyze engagement potential and quality.",
+    textareaPlaceholder: "Ex: It's a quick recipe channel for students, focused on simplicity and savings...",
+    btnCheck: "Analyze Content Profile",
     btnLoading: "Analyzing...",
-    scoreLabel: "Street Fit Score",
+    scoreLabel: "Content Quality Score",
     stratTitle: "Strategic Analysis",
-    stratDesc: "What you need to know before submitting your track.",
-    actionTitle: "💡 Action Plan for @soundofstreets-v1p:",
+    stratDesc: "What you need to know to optimize your content.",
+    actionTitle: "💡 Strategic Action Plan:",
     actionItems: [
-      "Watch the last 5 videos. Does your music fit between them?",
-      "Check description links for submission forms.",
-      "Have high-resolution artwork ready.",
-      "If no reply in 10 days, send a polite follow-up."
+      "Analyze the most successful videos in your niche over the last 30 days.",
+      "Optimize your title and thumbnail to maximize CTR.",
+      "Maintain a consistent visual identity across the profile.",
+      "Interact with the audience in comments within the first hour of posting."
     ],
     stratCards: [
-      { title: "Aesthetics", desc: "Heavy use of night street visuals and neon lights." },
-      { title: "Audience", desc: "Focused on youth looking for new talent." },
-      { title: "Quality", desc: "Mix and master must be professional level." },
-      { title: "Exclusivity", desc: "Mentioning a premiere helps acceptance." }
+      { title: "Aesthetics", desc: "Visual identity consistent with the chosen niche." },
+      { title: "Audience", desc: "Clear definition of the persona consuming your content." },
+      { title: "Quality", desc: "Audio and video must have clarity and good editing." },
+      { title: "Retention", desc: "Strong hooks in the first 3-5 seconds." }
     ]
   }
 };

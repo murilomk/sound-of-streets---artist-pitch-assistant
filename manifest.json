@@ -1,6 +1,6 @@
 {
-  "name": "Street Pitch Pro",
-  "short_name": "StreetPitch",
+  "name": "Content Pitch Pro",
+  "short_name": "ContentPitch",
   "description": "Assistente de Pitch e Marketing para Artistas Urbanos",
   "start_url": "/",
   "display": "standalone",

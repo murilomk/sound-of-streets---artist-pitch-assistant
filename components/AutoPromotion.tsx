@@ -1,18 +1,18 @@
 
 import React, { useState } from 'react';
-import { 
-  Rocket, 
-  Instagram, 
-  Twitter, 
-  Music2, 
-  Hash, 
-  Copy, 
-  Check, 
-  Loader2, 
-  Sparkles, 
-  Youtube, 
-  FileText, 
-  LayoutGrid, 
+import {
+  Rocket,
+  Instagram,
+  Twitter,
+  Music2,
+  Hash,
+  Copy,
+  Check,
+  Loader2,
+  Sparkles,
+  Youtube,
+  FileText,
+  LayoutGrid,
   Smartphone,
   Tag,
   Search
@@ -25,9 +25,9 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
   const [kit, setKit] = useState<PromoKit | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    trackTitle: '',
-    genre: 'Trap',
-    mood: 'Urban Night / Street Vibe',
+    contentTitle: '',
+    category: 'Geral',
+    style: 'Informativo / Envolvente',
     link: ''
   });
   const [copyState, setCopyState] = useState<string | null>(null);
@@ -57,15 +57,15 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
       {/* Input Form Section */}
       <div className="glass rounded-3xl p-6 md:p-10 border border-yellow-500/20 shadow-2xl relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-yellow-500/10 blur-3xl rounded-full"></div>
-        
+
         <div className="relative z-10">
           <div className="flex items-center gap-4 mb-8">
             <div className="bg-yellow-500 p-3 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.3)]">
               <Rocket className="text-black" size={28} />
             </div>
             <div>
-              <h3 className="text-2xl font-brand text-white tracking-wider uppercase">Gerador de Conteúdo Automatizado</h3>
-              <p className="text-gray-400 text-sm">Insira o link ou info da track para criar o kit pronto para publicar.</p>
+              <h3 className="text-2xl font-brand text-white tracking-wider uppercase">Kit de Divulgação Automatizado</h3>
+              <p className="text-gray-400 text-sm">Insira o link ou info do seu conteúdo para criar um kit pronto para publicar.</p>
             </div>
           </div>
 
@@ -74,42 +74,42 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
               <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
                 <Search size={14} className="text-yellow-500" /> Link do Vídeo ou Música
               </label>
-              <input 
-                type="url" 
-                placeholder="Cole o link do YouTube, SoundCloud ou Drive aqui..." 
+              <input
+                type="url"
+                placeholder="Cole o link do YouTube, SoundCloud ou Drive aqui..."
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-yellow-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-600"
                 value={formData.link}
-                onChange={e => setFormData({...formData, link: e.target.value})}
+                onChange={e => setFormData({ ...formData, link: e.target.value })}
               />
             </div>
-            
+
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Artista / MC</label>
-              <input 
-                type="text" 
-                placeholder="Seu nome artístico" 
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Criador / Canal</label>
+              <input
+                type="text"
+                placeholder="Seu nome artístico"
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-yellow-500 outline-none transition-all"
                 value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Nome da Track</label>
-              <input 
-                type="text" 
-                placeholder="Título da música" 
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-yellow-500 outline-none transition-all"
-                value={formData.trackTitle}
-                onChange={e => setFormData({...formData, trackTitle: e.target.value})}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
 
-            <button 
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Título do Conteúdo</label>
+              <input
+                type="text"
+                placeholder="Título do seu projeto"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-yellow-500 outline-none transition-all"
+                value={formData.contentTitle}
+                onChange={e => setFormData({ ...formData, contentTitle: e.target.value })}
+                required
+              />
+            </div>
+
+            <button
               type="submit"
-              disabled={loading || !formData.name || !formData.trackTitle}
+              disabled={loading || !formData.name || !formData.contentTitle}
               className="md:col-span-2 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-black py-5 rounded-2xl font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-[0_10px_30px_rgba(234,179,8,0.2)]"
             >
               {loading ? (
@@ -130,23 +130,23 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
 
       {kit && (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
-          
+
           {/* Main Results Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* YouTube SEO Section */}
             <div className="lg:col-span-2 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <PromoCard 
-                  title="Títulos de Alto Alcance" 
+                <PromoCard
+                  title="Títulos de Alto Alcance"
                   description="Focados em cliques e retenção"
                   icon={<Youtube className="text-red-500" size={18} />}
-                  content={kit.youtubeTitle}
-                  onCopy={() => copyToClipboard(kit.youtubeTitle, 'yt-title')}
-                  isCopied={copyState === 'yt-title'}
+                  content={kit.platformTitle}
+                  onCopy={() => copyToClipboard(kit.platformTitle, 'p-title')}
+                  isCopied={copyState === 'p-title'}
                 />
-                <PromoCard 
-                  title="Keywords SEO" 
+                <PromoCard
+                  title="Keywords SEO"
                   description="Para tags e metadados"
                   icon={<Tag className="text-yellow-500" size={18} />}
                   content={kit.keywords.join(', ')}
@@ -154,38 +154,38 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
                   isCopied={copyState === 'keywords'}
                 />
               </div>
-              
-              <PromoCard 
-                title="Descrição Otimizada (YouTube)" 
+
+              <PromoCard
+                title="Descrição Otimizada (YouTube)"
                 description="Texto completo com SEO e links"
                 icon={<FileText className="text-gray-400" size={18} />}
-                content={kit.youtubeDescription}
-                onCopy={() => copyToClipboard(kit.youtubeDescription, 'yt-desc')}
-                isCopied={copyState === 'yt-desc'}
+                content={kit.platformDescription}
+                onCopy={() => copyToClipboard(kit.platformDescription, 'p-desc')}
+                isCopied={copyState === 'p-desc'}
               />
             </div>
 
             {/* Social Media Shorts */}
             <div className="space-y-6">
-               <PromoCard 
-                title="Legenda Instagram" 
+              <PromoCard
+                title="Legenda Instagram"
                 description="Engajamento e Vibe"
                 icon={<Instagram className="text-pink-500" size={18} />}
                 content={kit.instagramCaption}
                 onCopy={() => copyToClipboard(kit.instagramCaption, 'ig')}
                 isCopied={copyState === 'ig'}
               />
-               <PromoCard 
-                title="Viral TikTok Caption" 
+              <PromoCard
+                title="Viral TikTok Caption"
                 description="Curto e direto"
                 icon={<Smartphone className="text-cyan-400" size={18} />}
                 content={kit.tiktokCaption}
                 onCopy={() => copyToClipboard(kit.tiktokCaption, 'tk-cap')}
                 isCopied={copyState === 'tk-cap'}
               />
-               <PromoCard 
-                title="Hashtags Sugeridas" 
-                description="Tendências Rap/Trap"
+              <PromoCard
+                title="Hashtags Sugeridas"
+                description="Hashtags Recomendadas"
                 icon={<Hash className="text-yellow-500" size={18} />}
                 content={kit.hashtags.join(' ')}
                 onCopy={() => copyToClipboard(kit.hashtags.join(' '), 'hash')}
@@ -196,16 +196,16 @@ export const AutoPromotion: React.FC<{ lang: Language }> = ({ lang }) => {
 
           {/* Additional Assets */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PromoCard 
-              title="Roteiro TikTok/Reels" 
+            <PromoCard
+              title="Roteiro TikTok/Reels"
               description="Sugestão de vídeo curto"
               icon={<Music2 className="text-white" size={18} />}
               content={kit.tiktokScript}
               onCopy={() => copyToClipboard(kit.tiktokScript, 'tk-script')}
               isCopied={copyState === 'tk-script'}
             />
-            <PromoCard 
-              title="Post para Twitter/X" 
+            <PromoCard
+              title="Post para Twitter/X"
               description="Rápido e clicável"
               icon={<Twitter className="text-blue-400" size={18} />}
               content={kit.twitterPost}
@@ -251,7 +251,7 @@ const PromoCard: React.FC<PromoCardProps> = ({ title, description, icon, content
           {description && <p className="text-[10px] text-gray-500 font-medium">{description}</p>}
         </div>
       </div>
-      <button 
+      <button
         onClick={onCopy}
         title="Copiar conteúdo"
         className={`p-2 rounded-xl transition-all ${isCopied ? 'bg-green-500 text-black' : 'bg-white/5 text-gray-500 hover:text-white hover:bg-white/10'}`}

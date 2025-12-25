@@ -1,16 +1,16 @@
 
 import React, { useState } from 'react';
-import { 
-  Calendar, 
-  Clock, 
-  Plus, 
-  Loader2, 
-  Youtube, 
-  Instagram, 
-  Smartphone, 
-  Music, 
-  Bell, 
-  CheckCircle2, 
+import {
+  Calendar,
+  Clock,
+  Plus,
+  Loader2,
+  Youtube,
+  Instagram,
+  Smartphone,
+  Music,
+  Bell,
+  CheckCircle2,
   Trash2,
   ChevronRight,
   Zap,
@@ -21,17 +21,17 @@ import { generateReleaseSchedule, ScheduleEvent, Language } from '../services/ge
 // Added lang prop to fix missing argument error on line 32
 export const ReleasePlanner: React.FC<{ lang: Language }> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
-  const [trackTitle, setTrackTitle] = useState('');
+  const [contentTitle, setContentTitle] = useState('');
   const [releaseDate, setReleaseDate] = useState('');
   const [schedule, setSchedule] = useState<ScheduleEvent[]>([]);
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!trackTitle || !releaseDate) return;
+    if (!contentTitle || !releaseDate) return;
     setLoading(true);
     try {
       // Pass lang as third argument to generateReleaseSchedule
-      const result = await generateReleaseSchedule(trackTitle, releaseDate, lang);
+      const result = await generateReleaseSchedule(contentTitle, releaseDate, lang);
       setSchedule(result);
     } catch (err) {
       console.error(err);
@@ -51,7 +51,7 @@ export const ReleasePlanner: React.FC<{ lang: Language }> = ({ lang }) => {
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <Calendar size={120} />
         </div>
-        
+
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-yellow-500 p-2 rounded-lg">
@@ -62,27 +62,27 @@ export const ReleasePlanner: React.FC<{ lang: Language }> = ({ lang }) => {
 
           <form onSubmit={handleCreatePlan} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Nome da Track</label>
-              <input 
-                type="text" 
-                placeholder="Ex: Vida de Neon" 
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Título do Trabalho / Conteúdo</label>
+              <input
+                type="text"
+                placeholder="Ex: Novo Projeto Viral"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:border-yellow-500 outline-none transition-all"
-                value={trackTitle}
-                onChange={e => setTrackTitle(e.target.value)}
+                value={contentTitle}
+                onChange={e => setContentTitle(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Data do Lançamento</label>
-              <input 
-                type="date" 
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Data Prevista</label>
+              <input
+                type="date"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:border-yellow-500 outline-none transition-all"
                 value={releaseDate}
                 onChange={e => setReleaseDate(e.target.value)}
                 required
               />
             </div>
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="md:col-span-2 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-black py-4 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg"
@@ -105,9 +105,9 @@ export const ReleasePlanner: React.FC<{ lang: Language }> = ({ lang }) => {
 
           <div className="space-y-3">
             {schedule.map((event, idx) => (
-              <ScheduleItem 
-                key={idx} 
-                event={event} 
+              <ScheduleItem
+                key={idx}
+                event={event}
                 onRemove={() => removeEvent(idx)}
               />
             ))}
@@ -151,7 +151,7 @@ const ScheduleItem: React.FC<{ event: ScheduleEvent, onRemove: () => void }> = (
           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Post em</span>
           <span className="text-sm font-bold text-yellow-500">{event.day.split('-').reverse().slice(0, 2).join('/')}</span>
         </div>
-        
+
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
             {getIcon()}
@@ -171,7 +171,7 @@ const ScheduleItem: React.FC<{ event: ScheduleEvent, onRemove: () => void }> = (
           <button className="p-2 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500 hover:text-black transition-all">
             <CheckCircle2 size={16} />
           </button>
-          <button 
+          <button
             onClick={onRemove}
             className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-black transition-all opacity-0 group-hover:opacity-100"
           >
