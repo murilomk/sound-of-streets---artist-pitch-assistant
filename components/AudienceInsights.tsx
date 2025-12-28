@@ -126,7 +126,7 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
               <h4 className="text-white font-bold mb-2 flex items-center gap-2 uppercase text-xs tracking-widest px-2">
                 <Bell size={16} className="text-yellow-500" /> Alertas Inteligentes
               </h4>
-              {insights.alerts.map((alert, idx) => (
+              {insights.alerts?.map((alert, idx) => (
                 <AlertItem key={idx} alert={alert} />
               ))}
             </div>
@@ -138,7 +138,7 @@ export const AudienceInsights: React.FC<{ lang: Language }> = ({ lang }) => {
               <Sparkles size={16} className="text-blue-500" /> Recomendações de Engajamento
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {insights.engagementTips.map((tip, idx) => (
+              {insights.engagementTips?.map((tip, idx) => (
                 <div key={idx} className="bg-black/30 p-4 rounded-2xl border border-white/5 text-xs text-gray-300 leading-relaxed italic">
                   "{tip}"
                 </div>

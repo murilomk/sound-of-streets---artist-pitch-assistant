@@ -87,13 +87,18 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
                 <TrendingUp size={16} className="text-yellow-500" /> {t.ritmos}
               </h4>
               <div className="space-y-5">
-                {trends.trendingTopics.map((g, idx) => (
+                {trends.trendingTopics?.map((g, idx) => (
                   <div key={idx} className="group">
                     <div className="flex justify-between items-end mb-2">
                       <span className="text-sm font-bold text-gray-300">{g.name}</span>
-                      <span className="text-[10px] font-black text-yellow-500">+{g.growth}</span>
+                      <span className="text-[10px] font-black text-yellow-500">{g.growth?.startsWith('+') ? '' : '+'}{g.growth}</span>
                     </div>
-                    <div className="w-full bg-white/5 h-1.5 rounded-full"><div className="bg-yellow-500 h-full rounded-full" style={{ width: g.growth }} /></div>
+                    <div className="w-full bg-white/5 h-1.5 rounded-full">
+                      <div
+                        className="bg-yellow-500 h-full rounded-full transition-all duration-1000"
+                        style={{ width: g.growth?.includes('%') ? g.growth : (parseInt(g.growth) ? `${parseInt(g.growth)}%` : '50%') }}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -104,7 +109,7 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
                 <Clock size={16} className="text-blue-500" /> {t.tempos}
               </h4>
               <div className="space-y-4">
-                {trends.bestPostingTimes.map((item, idx) => (
+                {trends.bestPostingTimes?.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-black/40 rounded-xl border border-white/5">
                     <span className="text-[10px] font-bold text-gray-500 uppercase">{item.platform}</span>
                     <span className="text-sm font-brand text-white tracking-widest">{item.time}</span>
@@ -120,7 +125,7 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
                 <Hash size={16} className="text-yellow-500" /> {t.hashtags}
               </h4>
               <div className="flex flex-wrap gap-2">
-                {trends.trendingHashtags.map((tag, idx) => <span key={idx} className="bg-white/5 px-4 py-2 rounded-full text-xs text-gray-400">{tag}</span>)}
+                {trends.trendingHashtags?.map((tag, idx) => <span key={idx} className="bg-white/5 px-4 py-2 rounded-full text-xs text-gray-400">{tag}</span>)}
               </div>
             </div>
 
@@ -128,7 +133,7 @@ export const TrendsTool: React.FC<{ lang: Language }> = ({ lang }) => {
               <h4 className="text-white font-bold text-xs uppercase tracking-[0.2em] px-2 flex items-center gap-2">
                 <Sparkles size={16} className="text-yellow-500" /> {t.sugestoes}
               </h4>
-              {trends.dailyContentSuggestions.map((s, idx) => (
+              {trends.dailyContentSuggestions?.map((s, idx) => (
                 <div key={idx} className="glass rounded-3xl p-6 border border-yellow-500/10 hover:border-yellow-500/30 transition-all group">
                   <div className="flex items-start gap-4">
                     <div className="bg-yellow-500/10 p-3 rounded-2xl"><Zap size={20} className="text-yellow-500" /></div>

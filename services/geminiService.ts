@@ -68,9 +68,15 @@ export interface ContentTrend {
 const getGroqClient = () => {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
   if (!apiKey) {
-    throw new Error("VITE_GROQ_API_KEY não configurada. Adicione sua chave no arquivo .env.local");
+    throw new Error("VITE_GROQ_API_KEY ausente. Verifique as variáveis de ambiente no Vercel ou no build do APK.");
   }
   return new Groq({ apiKey, dangerouslyAllowBrowser: true });
+};
+
+// Model Configuration
+const MODELS = {
+  STRATEGIC: "llama-3.3-70b-versatile",
+  EFFICIENT: "llama-3.1-8b-instant"
 };
 
 const getLangName = (lang: Language) => lang === 'pt' ? 'PORTUGUÊS (Brasil)' : 'ENGLISH';
@@ -78,16 +84,62 @@ const getLangName = (lang: Language) => lang === 'pt' ? 'PORTUGUÊS (Brasil)' : 
 const parseJsonResponse = (text: string, fallback: any = {}) => {
   try {
     // Remove markdown code blocks if present
-    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    let cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+    // Attempt to find JSON object bounds if text contains extra chars
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
+
     return JSON.parse(cleaned);
   } catch (error) {
     console.error("Failed to parse JSON response:", error);
+    console.log("Raw text:", text);
     return fallback;
   }
 };
 
-export const generatePitch = async (data: PitchData, lang: Language): Promise<string> => {
+/**
+ * Executes a Groq completion with automatic fallback if the strategic model hits rate limits.
+ */
+const fetchGroqChat = async (options: {
+  messages: { role: "user" | "system" | "assistant"; content: string }[],
+  temperature?: number,
+  max_tokens?: number,
+  response_format?: { type: "json_object" | "text" },
+  preferEfficient?: boolean
+}) => {
   const groq = getGroqClient();
+  const primaryModel = options.preferEfficient ? MODELS.EFFICIENT : MODELS.STRATEGIC;
+
+  try {
+    return await groq.chat.completions.create({
+      messages: options.messages,
+      model: primaryModel,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.max_tokens ?? 1024,
+      response_format: options.response_format
+    });
+  } catch (err: any) {
+    // If we hit a rate limit (429) and were using the strategic model, try the efficient one
+    if (err.status === 429 && primaryModel !== MODELS.EFFICIENT) {
+      console.warn(`Rate limit reached for ${primaryModel}. Falling back to ${MODELS.EFFICIENT}...`);
+      return await groq.chat.completions.create({
+        messages: options.messages,
+        model: MODELS.EFFICIENT,
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.max_tokens ?? 1024,
+        response_format: options.response_format
+      });
+    }
+    throw err;
+  }
+};
+
+export const generatePitch = async (data: PitchData, lang: Language): Promise<string> => {
   const prompt = `Você é um estrategista de negócios de elite e agente de talentos de alto nível.
   
 Crie um pitch imbatível e ultra-assertivo para:
@@ -106,18 +158,16 @@ Regras Cruciais:
 
 Responda em ${getLangName(lang)}.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.7,
-    max_tokens: 1024,
+    max_tokens: 1024
   });
 
   return completion.choices[0]?.message?.content || "";
 };
 
 export const analyzeVibe = async (description: string, lang: Language): Promise<{ score: number; feedback: string }> => {
-  const groq = getGroqClient();
   const prompt = `Você é um Head de Conteúdo brutalmente honesto de uma grande rede de mídia.
   
 Analise o potencial de mercado desse criador:
@@ -134,19 +184,18 @@ Retorne APENAS um objeto JSON no formato:
   "feedback": "<análise ácida, estratégica e de alto impacto em ${getLangName(lang)}>"
 }`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.3,
     max_tokens: 512,
-    response_format: { type: "json_object" }
+    response_format: { type: "json_object" },
+    preferEfficient: true
   });
 
   return parseJsonResponse(completion.choices[0]?.message?.content || '{}', { score: 50, feedback: "Não foi possível analisar." });
 };
 
 export const generatePromotionKit = async (data: Partial<PitchData>, lang: Language): Promise<PromoKit> => {
-  const groq = getGroqClient();
   const prompt = `Você é um Growth Hacker e Especialista em Viralização Multi-plataforma.
   
 Crie um kit de guerra para o lançamento de "${data.contentTitle}" de "${data.name}".
@@ -173,29 +222,28 @@ Retorne APENAS um objeto JSON:
 
 Responda em ${getLangName(lang)}.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.8,
     max_tokens: 2048,
     response_format: { type: "json_object" }
   });
 
-  return parseJsonResponse(completion.choices[0]?.message?.content || '{}', {
-    platformTitle: "",
-    platformDescription: "",
-    instagramCaption: "",
-    tiktokCaption: "",
-    tiktokScript: "",
-    twitterPost: "",
-    hashtags: [],
-    keywords: [],
-    launchStrategy: ""
-  });
+  const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}');
+  return {
+    platformTitle: result.platformTitle || "",
+    platformDescription: result.platformDescription || "",
+    instagramCaption: result.instagramCaption || "",
+    tiktokCaption: result.tiktokCaption || "",
+    tiktokScript: result.tiktokScript || "",
+    twitterPost: result.twitterPost || "",
+    hashtags: result.hashtags || [],
+    keywords: result.keywords || [],
+    launchStrategy: result.launchStrategy || ""
+  };
 };
 
 export const generateAudienceInsights = async (link: string, contentTitle: string, lang: Language): Promise<AudienceData> => {
-  const groq = getGroqClient();
   const prompt = `Você é um Quant-Analyst e Especialista em Psicologia de Audiência.
   
 Preveja o comportamento e métricas para "${contentTitle}" com precisão estratégica.
@@ -208,24 +256,24 @@ O JSON deve conter:
 
 Retorne APENAS um objeto JSON. Responda em ${getLangName(lang)}.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.7,
     max_tokens: 1024,
-    response_format: { type: "json_object" }
+    response_format: { type: "json_object" },
+    preferEfficient: true
   });
 
-  return parseJsonResponse(completion.choices[0]?.message?.content || '{}', {
-    alerts: [],
-    peakHour: "",
-    bestRegion: "",
-    engagementTips: []
-  });
+  const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}');
+  return {
+    alerts: result.alerts || [],
+    peakHour: result.peakHour || "",
+    bestRegion: result.bestRegion || "",
+    engagementTips: result.engagementTips || []
+  };
 };
 
 export const generateReleaseSchedule = async (contentTitle: string, releaseDate: string, lang: Language): Promise<ScheduleEvent[]> => {
-  const groq = getGroqClient();
   const prompt = `Você é um Strategist Master de Lançamentos Milionários.
   
 Crie uma "Operação de Guerra" de 10 dias para explodir o lançamento de "${contentTitle}" marcado para ${releaseDate}.
@@ -237,9 +285,8 @@ Requisitos:
 
 Retorne APENAS um array JSON com 10 missões diárias. Responda em ${getLangName(lang)}.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.7,
     max_tokens: 2048,
     response_format: { type: "json_object" }
@@ -250,7 +297,6 @@ Retorne APENAS um array JSON com 10 missões diárias. Responda em ${getLangName
 };
 
 export const getVideoEditSuggestions = async (contentInfo: string, lang: Language): Promise<VideoSuggestion[]> => {
-  const groq = getGroqClient();
   const prompt = `Você é um especialista em edição de vídeos de alta retenção para TikTok, Reels e Shorts.
 
 Para o conteúdo: "${contentInfo}"
@@ -269,12 +315,12 @@ Retorne APENAS um array JSON:
 
 Responda em ${getLangName(lang)}.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.8,
     max_tokens: 1024,
-    response_format: { type: "json_object" }
+    response_format: { type: "json_object" },
+    preferEfficient: true
   });
 
   const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}', { suggestions: [] });
@@ -282,7 +328,6 @@ Responda em ${getLangName(lang)}.`;
 };
 
 export const prepareDistributionConfig = async (contentTitle: string, lang: Language): Promise<DistributionFormat[]> => {
-  const groq = getGroqClient();
   const prompt = `Você é um especialista em otimização multiplataforma.
 
 Crie configurações de distribuição otimizadas para o conteúdo "${contentTitle}" em diferentes redes sociais.
@@ -303,12 +348,12 @@ Inclua: YouTube, TikTok, Instagram Reels, Instagram Feed, Twitter.
 
 Responda em ${getLangName(lang)}.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.5,
     max_tokens: 1536,
-    response_format: { type: "json_object" }
+    response_format: { type: "json_object" },
+    preferEfficient: true
   });
 
   const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}', { formats: [] });
@@ -316,7 +361,6 @@ Responda em ${getLangName(lang)}.`;
 };
 
 export const getMusicTrends = async (lang: Language): Promise<ContentTrend> => {
-  const groq = getGroqClient();
   const prompt = `Você é o Diretor Global de Insights Criativos do TikTok e YouTube.
   
 Analise o zeitgeist atual e as tendências de "vanguarda" para criadores (Dezembro 2024 / Janeiro 2025).
@@ -345,24 +389,23 @@ Retorne APENAS um objeto JSON:
 
 Responda em ${getLangName(lang)}.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.7,
     max_tokens: 2048,
     response_format: { type: "json_object" }
   });
 
-  return parseJsonResponse(completion.choices[0]?.message?.content || '{}', {
-    trendingTopics: [],
-    trendingHashtags: [],
-    bestPostingTimes: [],
-    dailyContentSuggestions: []
-  });
+  const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}');
+  return {
+    trendingTopics: result.trendingTopics || [],
+    trendingHashtags: result.trendingHashtags || [],
+    bestPostingTimes: result.bestPostingTimes || [],
+    dailyContentSuggestions: result.dailyContentSuggestions || []
+  };
 };
 
 export const generateThumbnail = async (promptInfo: string, lang: Language): Promise<string> => {
-  const groq = getGroqClient();
   const prompt = `Você é um gerador de comandos para IAs de imagem (como Midjourney ou DALL-E).
   
 Crie um prompt detalhado e visualmente impactante para uma capa/thumbnail com base nesta descrição:
@@ -374,14 +417,76 @@ https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=cro
 
 Responda APENAS com a URL.`;
 
-  const completion = await groq.chat.completions.create({
+  const completion = await fetchGroqChat({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
     temperature: 0.7,
     max_tokens: 256,
+    preferEfficient: true
   });
 
   const content = completion.choices[0]?.message?.content || "";
   const urlMatch = content.match(/https?:\/\/[^\s]+/);
   return urlMatch ? urlMatch[0] : "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=1280&h=720";
+};
+
+export type ContentMode = 'music' | 'short' | 'long' | 'ad';
+
+export interface VideoAnalysisResult {
+  score: number;
+  viralPotential: 'Baixo' | 'Médio' | 'Alto';
+  positives: string[];
+  negatives: string[];
+  improvements: string[];
+  suggestions: string[];
+  verdict: string;
+}
+
+export const analyzeVideoStrategy = async (content: string, type: 'link' | 'file', lang: Language, mode: ContentMode = 'short'): Promise<VideoAnalysisResult> => {
+  const modeContext = {
+    music: "Foco em: melodia, letra, vibe, potencial de uso em trends, qualidade da produção sonora.",
+    short: "Foco em: retenção nos primeiros 3s (hook), ritmo frenético, loop perfeito, áudio em alta.",
+    long: "Foco em: storytelling, estruturação do roteiro, clareza da mensagem, qualidade técnica, thumbnail (se descrita).",
+    ad: "Foco em: CTA (Chamada para Ação), clareza da oferta, quebra de padrão, dor vs solução."
+  }[mode];
+
+  const prompt = `Você é um Consultor de Conteúdo Sênior e Estrategista de Viralização.
+  
+  Analise o seguinte conteúdo (Tipo: ${type}, Modo: ${mode.toUpperCase()}):
+  "${content}"
+  
+  DIRETRIZES DE ANÁLISE (${modeContext}):
+  1. Seja brutalmente honesto mas construtivo.
+  2. Analise: Qualidade, Clareza, Ritmo, Retenção (3s), Áudio/Imagem, Storytelling e Potencial Viral.
+  
+  Retorne APENAS um objeto JSON estrito com esta estrutura:
+  {
+    "score": <0 a 10, nota geral>,
+    "viralPotential": "<'Baixo' | 'Médio' | 'Alto'>",
+    "positives": ["<Ponto Forte 1>", "<Ponto Forte 2>", ...],
+    "negatives": ["<Ponto Fraco 1>", "<Ponto Fraco 2>", ...],
+    "improvements": ["<O que pode melhorar 1>", "<O que pode melhorar 2>", ...],
+    "suggestions": ["<Sugestão prática de edição/roteiro/CTA>", ...],
+    "verdict": "<Resumo final motivador e direto>"
+  }
+  
+  Responda em ${getLangName(lang)}.`;
+
+  const completion = await fetchGroqChat({
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.6,
+    max_tokens: 1024,
+    response_format: { type: "json_object" },
+    preferEfficient: true // Default to faster/cheaper model for this interactive feature
+  });
+
+  const result = parseJsonResponse(completion.choices[0]?.message?.content || '{}');
+  return {
+    score: result.score || 0,
+    viralPotential: result.viralPotential || 'Baixo',
+    positives: result.positives || [],
+    negatives: result.negatives || [],
+    improvements: result.improvements || [],
+    suggestions: result.suggestions || [],
+    verdict: result.verdict || "Análise concluída."
+  };
 };

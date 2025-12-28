@@ -13,6 +13,7 @@ import { AutoPromotion } from './components/AutoPromotion';
 import { AudienceInsights } from './components/AudienceInsights';
 import { ReleasePlanner } from './components/ReleasePlanner';
 import { TrendsTool } from './components/TrendsTool';
+import { VideoContentAnalyzer } from './components/VideoContentAnalyzer';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import { Capacitor } from '@capacitor/core';
 
@@ -45,7 +46,8 @@ const translations = {
     tabInsightsDesc: "Métricas e Alertas",
     tabTrendsDesc: "O que está em alta",
     tabAgendaDesc: "Cronograma de conteúdo",
-    tabCheckDesc: "Checklist de lançamento"
+    tabCheckDesc: "Checklist de lançamento",
+    tabVideoDesc: "Análise de Conteúdo"
   },
   en: {
     title: "Content Pitch Pro",
@@ -74,13 +76,14 @@ const translations = {
     tabInsightsDesc: "Metrics & Alerts",
     tabTrendsDesc: "What's trending",
     tabAgendaDesc: "Content schedule",
-    tabCheckDesc: "Launch checklist"
+    tabCheckDesc: "Launch checklist",
+    tabVideoDesc: "Content Analysis"
   }
 };
 
 const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('pt');
-  const [activeTab, setActiveTab] = useState<'analyzer' | 'pitch' | 'promotion' | 'checklist' | 'insights' | 'planner' | 'trends'>('analyzer');
+  const [activeTab, setActiveTab] = useState<'analyzer' | 'pitch' | 'promotion' | 'checklist' | 'insights' | 'planner' | 'trends' | 'video-analysis'>('analyzer');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [minutesSinceUpdate, setMinutesSinceUpdate] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -131,6 +134,7 @@ const App: React.FC = () => {
               <NavBtn active={activeTab === 'promotion'} onClick={() => scrollToContent('promotion')} label={t.promotion} />
               <NavBtn active={activeTab === 'insights'} onClick={() => scrollToContent('insights')} label={t.insights} />
               <NavBtn active={activeTab === 'trends'} onClick={() => scrollToContent('trends')} label={t.trends} />
+              <NavBtn active={activeTab === 'video-analysis'} onClick={() => scrollToContent('video-analysis')} label={language === 'pt' ? 'Conteúdo' : 'Content'} />
             </nav>
 
             <div className="hidden lg:flex items-center bg-white/5 rounded-full p-1 border border-white/10">
@@ -177,6 +181,7 @@ const App: React.FC = () => {
               <TabButton active={activeTab === 'promotion'} onClick={() => scrollToContent('promotion')} icon={<Rocket size={20} />} label={t.promotion} description={t.tabPromoDesc} />
               <TabButton active={activeTab === 'insights'} onClick={() => scrollToContent('insights')} icon={<BarChart3 size={20} />} label={t.insights} description={t.tabInsightsDesc} />
               <TabButton active={activeTab === 'trends'} onClick={() => scrollToContent('trends')} icon={<Flame size={20} />} label={t.trends} description={t.tabTrendsDesc} />
+              <TabButton active={activeTab === 'video-analysis'} onClick={() => scrollToContent('video-analysis')} icon={<Video size={20} />} label={language === 'pt' ? 'Análise de Conteúdo' : 'Content Analysis'} description={t.tabVideoDesc} />
               <TabButton active={activeTab === 'planner'} onClick={() => scrollToContent('planner')} icon={<Calendar size={20} />} label={t.agenda} description={t.tabAgendaDesc} />
               <TabButton active={activeTab === 'checklist'} onClick={() => scrollToContent('checklist')} icon={<CheckCircle2 size={20} />} label={t.checklist} description={t.tabCheckDesc} />
             </div>
@@ -238,6 +243,7 @@ const App: React.FC = () => {
             <TabButton active={activeTab === 'promotion'} onClick={() => setActiveTab('promotion')} icon={<Rocket size={18} />} label={t.promotion} description={t.tabPromoDesc} />
             <TabButton active={activeTab === 'insights'} onClick={() => setActiveTab('insights')} icon={<BarChart3 size={18} />} label={t.insights} description={t.tabInsightsDesc} />
             <TabButton active={activeTab === 'trends'} onClick={() => setActiveTab('trends')} icon={<Flame size={18} />} label={t.trends} description={t.tabTrendsDesc} />
+            <TabButton active={activeTab === 'video-analysis'} onClick={() => setActiveTab('video-analysis')} icon={<Video size={18} />} label={language === 'pt' ? 'Análise de Conteúdo' : 'Content Analysis'} description={t.tabVideoDesc} />
             <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} icon={<Calendar size={18} />} label={t.agenda} description={t.tabAgendaDesc} />
             <TabButton active={activeTab === 'checklist'} onClick={() => setActiveTab('checklist')} icon={<CheckCircle2 size={18} />} label={t.checklist} description={t.tabCheckDesc} />
           </div>
@@ -257,6 +263,9 @@ const App: React.FC = () => {
             </div>
             <div className={activeTab === 'trends' ? "animate-in fade-in duration-300" : "hidden"}>
               <TrendsTool lang={language} />
+            </div>
+            <div className={activeTab === 'video-analysis' ? "animate-in fade-in duration-300" : "hidden"}>
+              <VideoContentAnalyzer lang={language} />
             </div>
             <div className={activeTab === 'planner' ? "animate-in fade-in duration-300" : "hidden"}>
               <ReleasePlanner lang={language} />
